@@ -2,36 +2,39 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, List, message, Spin, Modal, Form, Input, Button } from "antd";
+import { message, Spin, Modal, Form, Input, Button } from "antd";
 import {
   fetchPosts,
   createPost,
   updatePost,
   deletePost,
 } from "@/services/post/postService";
+import BlogsCard from "@/components/blogs/BlogsCard";
+import { Post } from "@/interfaces/Post";
+import Cookies from "js-cookie";
 
 const BlogsPage: React.FC = () => {
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [updateForm] = Form.useForm();
-  const [currentPost, setCurrentPost] = useState<any>(null);
+  const [currentPost, setCurrentPost] = useState<Post | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const getPosts = async () => {
-      try {
-        const data = await fetchPosts();
-        setPosts(data);
-        setLoading(false);
-      } catch (error) {
-        message.error("Error fetching posts");
-        setLoading(false);
-      }
-    };
+  const getPosts = async () => {
+    try {
+      const data = await fetchPosts();
+      setPosts(data);
+      setLoading(false);
+    } catch (error) {
+      message.error("Error fetching posts");
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     getPosts();
   }, []);
 
@@ -39,7 +42,7 @@ const BlogsPage: React.FC = () => {
     setIsModalVisible(true);
   };
 
-  const showUpdateModal = (post: any) => {
+  const showUpdateModal = (post: Post) => {
     setCurrentPost(post);
     updateForm.setFieldsValue({
       title: post.title,
@@ -55,13 +58,11 @@ const BlogsPage: React.FC = () => {
         title: values.title,
         content: values.content,
       };
-      console.log("Request body:", requestBody); // Debugging line
       await createPost(requestBody);
       message.success("Post created successfully");
       setIsModalVisible(false);
       form.resetFields();
-      const data = await fetchPosts();
-      setPosts(data);
+      getPosts(); // Fetch updated posts
     } catch (error) {
       message.error("Error creating post");
     }
@@ -70,18 +71,14 @@ const BlogsPage: React.FC = () => {
   const handleUpdateOk = async () => {
     try {
       const values = await updateForm.validateFields();
-      const requestBody = {
-        title: values.title,
-        content: values.content,
-      };
-      console.log("Request body:", requestBody); // Debugging line
-      await updatePost(currentPost._id, values.title, values.content);
-      message.success("Post updated successfully");
-      setIsUpdateModalVisible(false);
-      updateForm.resetFields();
-      setCurrentPost(null);
-      const data = await fetchPosts();
-      setPosts(data);
+      if (currentPost) {
+        await updatePost(currentPost._id, values.title, values.content);
+        message.success("Post updated successfully");
+        setIsUpdateModalVisible(false);
+        updateForm.resetFields();
+        setCurrentPost(null);
+        getPosts(); // Fetch updated posts
+      }
     } catch (error) {
       message.error("Error updating post");
     }
@@ -102,8 +99,7 @@ const BlogsPage: React.FC = () => {
         try {
           await deletePost(id);
           message.success("Post deleted successfully");
-          const data = await fetchPosts();
-          setPosts(data);
+          getPosts(); // Fetch updated posts
         } catch (error) {
           message.error("Error deleting post");
         }
@@ -115,63 +111,47 @@ const BlogsPage: React.FC = () => {
     router.push(`/blogs/${id}`);
   };
 
+  const logout = () => {
+    Cookies.remove("token");
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-4xl p-4">
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center">
+      <div className="text-black h-16 w-full flex justify-between items-center max-w-4xl">
+        <div className="text-3xl font-bold font-serif text-orange-600">
+          Blogstar
+        </div>
+        <div className="flex gap-5 items-center">
+          <div
+            className="px-10 py-2 rounded-lg bg-blue-600 text-white font-bold cursor-pointer"
+            onClick={showModal}
+          >
+            Create a blog
+          </div>
+          <div
+            className="px-10 py-2 rounded-lg bg-blue-200 text-black font-bold cursor-pointer"
+            onClick={logout}
+          >
+            log Out
+          </div>
+        </div>
+      </div>
+      <div className="w-full p-4 h-full flex justify-center max-w-6xl">
         {loading ? (
           <Spin size="large" />
         ) : (
-          <List
-            grid={{ gutter: 16, column: 2 }}
-            dataSource={[{ static: true }, ...posts]}
-            renderItem={(post) =>
-              post.static ? (
-                <List.Item>
-                  <Card
-                    title="Create New Post"
-                    onClick={showModal}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <p>Click here to create a new post</p>
-                  </Card>
-                </List.Item>
-              ) : (
-                <List.Item>
-                  <Card
-                    title={post.title}
-                    onClick={() => handleCardClick(post._id)}
-                    style={{ cursor: "pointer" }}
-                    extra={
-                      <p className="w-6 h-6 rounded-full flex items-center justify-center bg-red-500 text-white text-xs">
-                        01
-                      </p>
-                    }
-                  >
-                    <p>{post.content.substring(0, 100)}...</p>
-                    <Button
-                      type="link"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        showUpdateModal(post);
-                      }}
-                    >
-                      Update
-                    </Button>
-                    <Button
-                      type="link"
-                      danger
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(post._id);
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </Card>
-                </List.Item>
-              )
-            }
-          />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {posts.map((post) => (
+              <div key={post._id}>
+                <BlogsCard
+                  post={post}
+                  handleCardClick={handleCardClick}
+                  showUpdateModal={showUpdateModal}
+                  handleDelete={handleDelete}
+                />
+              </div>
+            ))}
+          </div>
         )}
       </div>
       <Modal

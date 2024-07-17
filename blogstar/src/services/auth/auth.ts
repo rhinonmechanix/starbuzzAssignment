@@ -1,4 +1,5 @@
-// src/services/auth.ts
+"use client";
+
 import { publicAxios } from "../helper/helper";
 
 export const signup = async (

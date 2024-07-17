@@ -11,7 +11,7 @@ router.post("/", authMiddleware, async (req, res) => {
   try {
     const comment = new Comment({
       post_id,
-      author: req.user.user_id.toString(),
+      author: req.user.username.toString(),
       content,
     });
 

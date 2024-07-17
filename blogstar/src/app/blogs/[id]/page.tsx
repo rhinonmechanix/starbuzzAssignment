@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, Spin, message, List, Input, Button, Form } from "antd";
 import { fetchPostById, createComment } from "@/services/post/postService";
+import moment from "moment";
 
 const SinglePostPage: React.FC = () => {
   const router = useRouter();
@@ -54,11 +55,19 @@ const SinglePostPage: React.FC = () => {
             <Card title={post.title}>
               <p>{post.content}</p>
               <List
-                header={<div>Comments</div>}
+                header={<div className="mt-5 text-lg font-bold">Comments</div>}
                 dataSource={post.comments}
                 renderItem={(comment: any) => (
                   <List.Item>
-                    <p>{comment.content}</p>
+                    <div>
+                      <p>{comment.content}</p>
+                      <span style={{ color: "gray", fontSize: "12px" }}>
+                        By {comment.author},{" "}
+                        {moment(comment.created_at).format(
+                          "MMMM Do YYYY, h:mm:ss a"
+                        )}
+                      </span>
+                    </div>
                   </List.Item>
                 )}
               />
@@ -75,7 +84,7 @@ const SinglePostPage: React.FC = () => {
                     { required: true, message: "Please enter your comment" },
                   ]}
                 >
-                  <Input.TextArea rows={4} />
+                  <Input style={{ height: 45 }} />
                 </Form.Item>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
