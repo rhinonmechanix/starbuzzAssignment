@@ -1,62 +1,74 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
+import { Form, Input, Button, message } from "antd";
+import { signup } from "@/services/auth/auth";
+import Cookies from "js-cookie";
 
 const SignUp: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+
+  const onFinish = async (values: any) => {
+    const { username, email, password, confirmPassword } = values;
+
+    if (password !== confirmPassword) {
+      message.error("Passwords do not match");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await signup(username, email, password);
+      Cookies.set("token", data.token, { expires: 1 }); // Save token in cookies for 1 day
+      message.success("Sign up successful!");
+    } catch (err) {
+      message.error("Error signing up");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
-        <form>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="email"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              className="w-full px-3 py-2 border rounded"
-              placeholder="Enter your email"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="password"
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              className="w-full px-3 py-2 border rounded"
-              placeholder="Enter your password"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="confirm-password"
-            >
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="confirm-password"
-              className="w-full px-3 py-2 border rounded"
-              placeholder="Confirm your password"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <button
-              type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
+        <Form layout="vertical" onFinish={onFinish}>
+          <Form.Item
+            name="username"
+            label="Username"
+            rules={[{ required: true, message: "Please enter your username" }]}
+          >
+            <Input placeholder="Enter your username" />
+          </Form.Item>
+          <Form.Item
+            name="email"
+            label="Email"
+            rules={[{ required: true, message: "Please enter your email" }]}
+          >
+            <Input type="email" placeholder="Enter your email" />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            label="Password"
+            rules={[{ required: true, message: "Please enter your password" }]}
+          >
+            <Input.Password placeholder="Enter your password" />
+          </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            label="Confirm Password"
+            rules={[
+              { required: true, message: "Please confirm your password" },
+            ]}
+          >
+            <Input.Password placeholder="Confirm your password" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={loading} block>
               Sign Up
-            </button>
-          </div>
-        </form>
+            </Button>
+          </Form.Item>
+        </Form>
       </div>
     </div>
   );

@@ -25,7 +25,7 @@ router.post("/", authMiddleware, async (req, res) => {
 });
 
 // Get all posts
-router.get("/", async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   try {
     const posts = await Post.find();
     res.json(posts);
@@ -36,7 +36,7 @@ router.get("/", async (req, res) => {
 });
 
 // Get a single post by ID with comments
-router.get("/:id", async (req, res) => {
+router.get("/:id", authMiddleware, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) {

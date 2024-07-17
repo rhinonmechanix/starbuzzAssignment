@@ -5,9 +5,8 @@ const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
 
 // Add a new comment to a post
-router.post("/:post_id", authMiddleware, async (req, res) => {
-  const { content } = req.body;
-  const post_id = req.params.post_id;
+router.post("/", authMiddleware, async (req, res) => {
+  const { post_id, content } = req.body;
 
   try {
     const comment = new Comment({
