@@ -2,11 +2,13 @@
 
 import React, { useState } from "react";
 import { Form, Input, Button, message } from "antd";
-import { signup } from "@/services/auth/auth";
+import { signUp } from "@/services/auth/auth";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
-const SignUp: React.FC = () => {
+const signup: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const onFinish = async (values: any) => {
     const { username, email, password, confirmPassword } = values;
@@ -18,9 +20,10 @@ const SignUp: React.FC = () => {
 
     setLoading(true);
     try {
-      const data = await signup(username, email, password);
+      const data = await signUp(username, email, password);
       Cookies.set("token", data.token, { expires: 1 }); // Save token in cookies for 1 day
       message.success("Sign up successful!");
+      router.push("/blogs");
     } catch (err) {
       message.error("Error signing up");
     } finally {
@@ -69,9 +72,12 @@ const SignUp: React.FC = () => {
             </Button>
           </Form.Item>
         </Form>
+        <p className="mt-6 text-center text-gray-500">
+          Already have an account? <a href="/signin">Sign In</a>
+        </p>
       </div>
     </div>
   );
 };
 
-export default SignUp;
+export default signup;

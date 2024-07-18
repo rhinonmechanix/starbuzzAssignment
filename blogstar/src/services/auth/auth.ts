@@ -2,7 +2,7 @@
 
 import { publicAxios } from "../helper/helper";
 
-export const signup = async (
+export const signUp = async (
   username: string,
   email: string,
   password: string

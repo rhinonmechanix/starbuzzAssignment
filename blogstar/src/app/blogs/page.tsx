@@ -12,6 +12,7 @@ import {
 import BlogsCard from "@/components/blogs/BlogsCard";
 import { Post } from "@/interfaces/Post";
 import Cookies from "js-cookie";
+import { getAuthData } from "@/Utils/utils";
 
 const BlogsPage: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -113,7 +114,17 @@ const BlogsPage: React.FC = () => {
 
   const logout = () => {
     Cookies.remove("token");
+    router.push("/signin");
   };
+
+  useEffect(() => {
+    const authData = getAuthData();
+    const token = authData?.token;
+
+    if (!token) {
+      router.push("/signin");
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center">
@@ -123,13 +134,13 @@ const BlogsPage: React.FC = () => {
         </div>
         <div className="flex gap-5 items-center">
           <div
-            className="px-10 py-2 rounded-lg bg-blue-600 text-white font-bold cursor-pointer"
+            className="px-5 py-2 rounded-lg bg-blue-600 text-white font-bold cursor-pointer"
             onClick={showModal}
           >
             Create a blog
           </div>
           <div
-            className="px-10 py-2 rounded-lg bg-blue-200 text-black font-bold cursor-pointer"
+            className="px-5 py-2 rounded-lg bg-blue-200 text-black font-bold cursor-pointer"
             onClick={logout}
           >
             log Out

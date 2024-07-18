@@ -4,9 +4,11 @@ import React, { useState } from "react";
 import { Form, Input, Button, message } from "antd";
 import { login } from "@/services/auth/auth";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
-const SignIn: React.FC = () => {
+const signin: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const onFinish = async (values: any) => {
     const { email, password } = values;
@@ -16,6 +18,7 @@ const SignIn: React.FC = () => {
       const data = await login(email, password);
       Cookies.set("token", data.token, { expires: 1 }); // Save token in cookies for 1 day
       message.success("Login successful!");
+      router.push("/blogs");
     } catch (err) {
       message.error("Invalid credentials");
     } finally {
@@ -48,9 +51,12 @@ const SignIn: React.FC = () => {
             </Button>
           </Form.Item>
         </Form>
+        <p className="text-center text-black">
+          Don't have an account? <a href="/signup">Sign Up</a>
+        </p>
       </div>
     </div>
   );
 };
 
-export default SignIn;
+export default signin;
