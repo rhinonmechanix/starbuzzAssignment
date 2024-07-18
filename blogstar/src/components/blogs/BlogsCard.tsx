@@ -1,5 +1,4 @@
 import React from "react";
-import { Card, Button } from "antd";
 import { Post } from "@/interfaces/Post";
 
 interface BlogsCardProps {
